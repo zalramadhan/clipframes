@@ -1,0 +1,7 @@
+node_modules
+dist
+dist-single
+clipframes.html
+dist-lib
+.shots
+*.local

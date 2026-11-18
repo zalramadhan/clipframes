@@ -7,6 +7,7 @@ import {
 } from '../lib';
 import { CLIP_A, CLIP_B } from './clips';
 import { copyText } from './copy';
+import { isLightDevice } from '../lib/device';
 
 const pad = (value: number) => String(value).padStart(2, '0');
 
@@ -20,6 +21,7 @@ export default function EffectModal({ effect, onClose }: Props) {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
+  const [light] = useState(() => isLightDevice());
   const [duration, setDuration] = useState(1100);
   const [intensity, setIntensity] = useState(0.65);
   const [playing, setPlaying] = useState(true);
@@ -127,8 +129,8 @@ export default function EffectModal({ effect, onClose }: Props) {
 
         <div className="modal-stage">
           <TransitionStage
-            from={CLIP_A.video}
-            to={CLIP_B.video}
+            from={light ? CLIP_A.preview : CLIP_A.video}
+            to={light ? CLIP_B.preview : CLIP_B.video}
             effect={effect.id}
             duration={duration}
             intensity={intensity}

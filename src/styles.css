@@ -987,6 +987,84 @@ input[type='range']::-moz-range-thumb {
   font-size: 12px;
 }
 
+.footer-credit a {
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.footer-credit a:hover {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+
+.footer-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 22px;
+}
+
+.footer-social {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.footer-social a {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 13px 9px 11px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.footer-social a:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.footer-social svg {
+  flex: none;
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+}
+
+.footer-social svg .fill {
+  fill: currentColor;
+  stroke: none;
+}
+
+.footer-social span {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.footer-social em {
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.footer-social small {
+  margin-top: 3px;
+  color: var(--dim);
+  font-size: 10.5px;
+}
+
 .footer-meta {
   display: flex;
   gap: 26px;
@@ -1123,7 +1201,40 @@ input[type='range']::-moz-range-thumb {
   .footer-inner {
     flex-direction: column;
     align-items: flex-start;
-    gap: 20px;
+    gap: 24px;
+  }
+
+  .footer-side {
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .footer-social {
+    justify-content: flex-start;
+  }
+
+  /* Backdrop blur is the most expensive thing to recomposite while scrolling
+     a phone, so the small screens pay for it with plain translucent panels. */
+  .site-header {
+    background: rgba(7, 7, 8, 0.95);
+    backdrop-filter: none;
+  }
+
+  .stage-live,
+  .stage-count,
+  .card-index,
+  .card-cat {
+    backdrop-filter: none;
+    background: rgba(5, 5, 7, 0.72);
+  }
+
+  .modal-backdrop {
+    background: rgba(4, 4, 6, 0.96);
+    backdrop-filter: none;
+  }
+
+  .stage {
+    box-shadow: 0 24px 50px -36px rgba(255, 90, 54, 0.5);
   }
 }
 

@@ -1,4 +1,5 @@
 import { useEffect, useRef, type CSSProperties } from 'react';
+import { isLightDevice } from './device';
 import { TransitionRenderer } from './renderer';
 import { getTransition } from './transitions';
 
@@ -80,10 +81,20 @@ export function TransitionStage({
     rendererRef.current = renderer;
     renderer.setEffect(getTransition(effectRef.current));
 
+    const light = isLightDevice();
+    const maxPixels = light ? 960 : 1920;
+
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
-      const ratio = Math.min(window.devicePixelRatio || 1, 2);
-      renderer.setSize(rect.width * ratio, rect.height * ratio);
+      const ratio = Math.min(window.devicePixelRatio || 1, light ? 1 : 2);
+      let width = Math.max(1, rect.width * ratio);
+      let height = Math.max(1, rect.height * ratio);
+      if (width > maxPixels) {
+        const scale = maxPixels / width;
+        width *= scale;
+        height *= scale;
+      }
+      renderer.setSize(width, height);
     };
     resize();
     const observer = new ResizeObserver(resize);
@@ -92,17 +103,26 @@ export function TransitionStage({
     const videos = [fromRef.current, toRef.current].filter(
       (video): video is HTMLVideoElement => Boolean(video),
     );
-    for (const video of videos) {
-      video.muted = true;
-      void video.play().catch(() => {});
-    }
+    for (const video of videos) video.muted = true;
 
     let frame = 0;
+    let running = false;
+    let onscreen = true;
     const start = performance.now();
     let lastCycle = 0;
     let lastReport = 0;
+    let lastDraw = 0;
+    const minFrameTime = light ? 1000 / 30 : 0;
 
     const tick = (now: number) => {
+      frame = 0;
+      if (!running) return;
+      if (now - lastDraw < minFrameTime) {
+        frame = requestAnimationFrame(tick);
+        return;
+      }
+      lastDraw = now;
+
       const pass = Math.max(160, durationRef.current);
       const pause = Math.max(80, holdRef.current);
       const cycle = pass * 2 + pause * 2;
@@ -140,11 +160,37 @@ export function TransitionStage({
       }
       frame = requestAnimationFrame(tick);
     };
-    frame = requestAnimationFrame(tick);
+
+    const sync = () => {
+      const shouldRun = onscreen && !document.hidden;
+      if (shouldRun === running) return;
+      running = shouldRun;
+      if (running) {
+        for (const video of videos) void video.play().catch(() => {});
+        if (!frame) frame = requestAnimationFrame(tick);
+      } else {
+        if (frame) cancelAnimationFrame(frame);
+        frame = 0;
+        for (const video of videos) video.pause();
+      }
+    };
+
+    const visibility = new IntersectionObserver(
+      (entries) => {
+        onscreen = entries.some((entry) => entry.isIntersecting);
+        sync();
+      },
+      { threshold: 0.01 },
+    );
+    visibility.observe(canvas);
+    document.addEventListener('visibilitychange', sync);
+    sync();
 
     return () => {
-      cancelAnimationFrame(frame);
+      if (frame) cancelAnimationFrame(frame);
       observer.disconnect();
+      visibility.disconnect();
+      document.removeEventListener('visibilitychange', sync);
       renderer.dispose();
       rendererRef.current = null;
       for (const video of videos) video.pause();

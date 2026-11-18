@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { CATEGORY_LABELS, TRANSITIONS, TransitionStage } from '../lib';
+import { isLightDevice } from '../lib/device';
 import { CLIP_A, CLIP_B } from './clips';
 
 const pad = (value: number) => String(value).padStart(2, '0');
@@ -8,7 +9,7 @@ const pad = (value: number) => String(value).padStart(2, '0');
 // the oldest context once a page holds more than ~16, so the pool is capped
 // well under that; the cards use a 480x270 cut of the clips to keep the
 // per-frame texture uploads cheap enough for a dozen simultaneous previews.
-const MAX_LIVE = 12;
+const MAX_LIVE = 8;
 const liveSlots = new Set<object>();
 const slotListeners = new Set<() => void>();
 
@@ -23,6 +24,9 @@ function useLivePreview() {
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
+    // On phones the posters are enough: a dozen WebGL contexts and videos is
+    // what made the grid crawl.
+    if (isLightDevice()) return;
     if (typeof IntersectionObserver === 'undefined') {
       setLive(true);
       return;
@@ -46,7 +50,7 @@ function useLivePreview() {
         visible = entries.some((entry) => entry.isIntersecting);
         sync();
       },
-      { threshold: 0 },
+      { threshold: 0.25 },
     );
     observer.observe(node);
     slotListeners.add(sync);

@@ -5,6 +5,7 @@ import {
   TransitionStage,
 } from '../lib';
 import { CLIP_A, CLIP_B } from './clips';
+import { isLightDevice } from '../lib/device';
 
 const pad = (value: number) => String(value).padStart(2, '0');
 
@@ -14,6 +15,7 @@ type Props = {
 
 export default function Hero({ onOpen }: Props) {
   const [index, setIndex] = useState(0);
+  const [light] = useState(() => isLightDevice());
   const current = TRANSITIONS[index];
 
   const advance = () => setIndex((value) => (value + 1) % TRANSITIONS.length);
@@ -70,8 +72,8 @@ export default function Hero({ onOpen }: Props) {
       <div className="hero-stage">
         <div className="stage">
           <TransitionStage
-            from={CLIP_A.video}
-            to={CLIP_B.video}
+            from={light ? CLIP_A.preview : CLIP_A.video}
+            to={light ? CLIP_B.preview : CLIP_B.video}
             effect={current.id}
             duration={1100}
             intensity={0.7}
